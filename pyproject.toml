@@ -11,6 +11,7 @@ djangorestframework = "^3.13.1"
 python-decouple = "^3.6"
 psycopg2 = "^2.9.3"
 split-settings = "^1.0.0"
+Pillow = "^9.2.0"
 
 [tool.poetry.dev-dependencies]
 black = {version = "^22.6.0", allow-prereleases = true}
