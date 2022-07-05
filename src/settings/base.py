@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     "rest_framework",
     # local
     "src.apps.images",
+    "src.apps.memberships",
 ]
 
 MIDDLEWARE = [
