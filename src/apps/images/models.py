@@ -11,8 +11,8 @@ from src.core.models import TimeStampedModel
 
 class Image(TimeStampedModel):
     title = models.CharField(max_length=200)
-    height = models.IntegerField()
-    width = models.IntegerField()
+    height = models.IntegerField(default=0)
+    width = models.IntegerField(default=0)
 
     image = models.ImageField(
         upload_to="images", height_field="height", width_field="width"
@@ -29,8 +29,8 @@ class ThumbnailSize(models.Model):
 class Thumbnail(TimeStampedModel):
     image = models.ForeignKey(Image, on_delete=models.CASCADE)
 
-    height = models.IntegerField()
-    width = models.IntegerField()
+    height = models.IntegerField(default=0)
+    width = models.IntegerField(default=0)
     thumbnail = models.ImageField(
         upload_to="thumbnails", height_field="height", width_field="width"
     )
