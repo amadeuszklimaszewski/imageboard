@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "imageboard"
+version = "0.1.0"
+description = "DjangoRestFramework API for uploading JPG and PNG files"
+authors = ["Amadeusz Klimaszewski <ami0126538815@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+Django = "^4.0.6"
+djangorestframework = "^3.13.1"
+python-decouple = "^3.6"
+psycopg2 = "^2.9.3"
+split-settings = "^1.0.0"
+
+[tool.poetry.dev-dependencies]
+black = {version = "^22.6.0", allow-prereleases = true}
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
