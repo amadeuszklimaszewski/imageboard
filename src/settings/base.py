@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     # local
     "src.apps.images",
     "src.apps.memberships",
+    "src.apps.accounts",
 ]
 
 MIDDLEWARE = [
