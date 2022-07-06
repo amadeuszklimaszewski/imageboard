@@ -2,7 +2,6 @@ import uuid
 from django.db import models
 from django.contrib.auth import get_user_model
 
-from src.apps.memberships.models import MembershipType
 from src.core.models import TimeStampedModel
 
 User = get_user_model()
@@ -13,7 +12,7 @@ class UserAccount(TimeStampedModel):
         User, on_delete=models.CASCADE, related_name="user_account"
     )
     membership_type = models.ForeignKey(
-        MembershipType, on_delete=models.SET_NULL, null=True
+        "memberships.MembershipType", on_delete=models.SET_NULL, null=True
     )
 
     def get_absolute_url(self):
