@@ -44,6 +44,9 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     # 3rd party
     "rest_framework",
+    "rest_framework.authtoken",
+    "dj_rest_auth",
+    "rest_framework_simplejwt",
     # local
     "src.apps.images",
     "src.apps.memberships",
