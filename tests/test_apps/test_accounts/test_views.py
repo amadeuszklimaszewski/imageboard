@@ -26,7 +26,7 @@ class TestUserAccountViewset(APITestCase):
         )
 
         cls.user_account_list_url = reverse("accounts:user-list")
-        cls.user_account_retrieve_url = reverse(
+        cls.user_account_detail_url = reverse(
             "accounts:user-detail",
             kwargs={"pk": cls.user_account.id},
         )
@@ -34,7 +34,7 @@ class TestUserAccountViewset(APITestCase):
     def setUp(self):
         self.client.force_login(user=self.user)
 
-    def test_user_can_retrieve_account(self):
+    def test_user_can_retrieve_account_list(self):
         response = self.client.get(self.user_account_list_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
@@ -46,7 +46,7 @@ class TestUserAccountViewset(APITestCase):
         self.assertEqual(user_data["email"], self.user.email)
 
     def test_user_can_retrieve_account_by_id(self):
-        response = self.client.get(self.user_account_retrieve_url)
+        response = self.client.get(self.user_account_detail_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         user_account_data = response.data
@@ -57,10 +57,10 @@ class TestUserAccountViewset(APITestCase):
 
     def test_other_user_cannot_retrieve_other_users_account(self):
         self.client.force_login(user=self.other_user)
-        response = self.client.get(self.user_account_retrieve_url)
+        response = self.client.get(self.user_account_detail_url)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-    def test_anonymous_user_cannot_retrieve_account(self):
+    def test_anonymous_user_cannot_retrieve_account_list(self):
         self.client.logout()
         response = self.client.get(self.user_account_list_url)
 
@@ -74,7 +74,7 @@ class TestUserAccountViewset(APITestCase):
 
     def test_admin_user_can_retrieve_other_users_account(self):
         self.client.force_login(user=self.admin)
-        response = self.client.get(self.user_account_retrieve_url)
+        response = self.client.get(self.user_account_detail_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         user_account_data = response.data
