@@ -56,7 +56,7 @@ class TestMembershipTypeViewset(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-    def test_anonymous_user_cannot_retrieve_membership_type_list(self):
+    def test_anonymous_user_cannot_retrieve_membership_type_by_id(self):
         self.client.logout()
         response = self.client.get(self.membership_type_detail_url)
 
