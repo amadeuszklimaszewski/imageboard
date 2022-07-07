@@ -1,10 +1,11 @@
 import io
 import os
+from math import ceil
 from typing import Any
 from django.core.files.base import ContentFile
 from PIL import Image as ImagePIL
 
-from django.contrib.auth.models import User
+from src.apps.accounts.models import UserAccount
 from src.apps.images.models import Thumbnail, Image as ImageModel
 
 
@@ -23,7 +24,7 @@ class ImageService:
         name, extension = img_filename.split(".")
         size = f"{thumbnail_size[0]}x{thumbnail_size[1]}"
 
-        thumb_filename = f"{name}-{size}px-thumb.{extension}"
+        thumb_filename = f"{name}-thumbnail-{size}px.{extension}"
 
         if extension in ["jpg", "jpeg"]:
             FTYPE = "JPEG"
@@ -40,11 +41,19 @@ class ImageService:
         return thumbnail
 
     @classmethod
-    def upload_image(cls, data: dict[str, Any], request_user: User) -> ImageModel:
+    def upload_image(
+        cls, data: dict[str, Any], user_account: UserAccount
+    ) -> ImageModel:
         title = data["title"]
         image_file = data["image"]
         image_model = ImageModel.objects.create(
-            image=image_file, title=title, uploaded_by=request_user.user_account
+            image=image_file, title=title, uploaded_by=user_account
         )
-        cls.create_thumbnail(instance=image_model, thumbnail_size=(100, 100))
+        thumbnails = user_account.membership_type.thumbnail_sizes.all()
+
+        for thumbnail in thumbnails:
+            height = thumbnail.height
+            width = ceil(image_model.width / (image_model.height / height))
+            print(height, width)
+            cls.create_thumbnail(instance=image_model, thumbnail_size=(width, height))
         return image_model
