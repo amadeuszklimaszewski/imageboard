@@ -29,6 +29,7 @@ class ImageOutputSerializer(serializers.ModelSerializer):
     class Meta:
         model = Image
         fields = (
+            "id",
             "title",
             "image",
             "created_at",
@@ -46,6 +47,7 @@ class BasicImageOutputSerializer(serializers.ModelSerializer):
     class Meta:
         model = Image
         fields = (
+            "id",
             "title",
             "thumbnails",
             "created_at",
@@ -63,6 +65,7 @@ class PremiumImageOutputSerializer(serializers.ModelSerializer):
     class Meta:
         model = Image
         fields = (
+            "id",
             "title",
             "thumbnails",
             "image",
@@ -82,6 +85,7 @@ class EnterpriseImageOutputSerializer(serializers.ModelSerializer):
     class Meta:
         model = Image
         fields = (
+            "id",
             "title",
             "thumbnails",
             "image",

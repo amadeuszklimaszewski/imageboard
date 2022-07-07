@@ -1,5 +1,5 @@
 from django.contrib.auth.models import User
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, generics
 from rest_framework.mixins import CreateModelMixin
 from rest_framework.response import Response
 from rest_framework.exceptions import PermissionDenied
