@@ -31,7 +31,9 @@ class ThumbnailSize(models.Model):
 
 
 class Thumbnail(TimeStampedModel):
-    image = models.ForeignKey(Image, on_delete=models.CASCADE)
+    image = models.ForeignKey(
+        Image, on_delete=models.CASCADE, related_name="thumbnails"
+    )
 
     height = models.IntegerField(default=0)
     width = models.IntegerField(default=0)
