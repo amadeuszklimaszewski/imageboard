@@ -1,10 +1,7 @@
+from uuid import uuid4
 from django.db import models
 
 from src.core.models import TimeStampedModel
-
-# class TempUrl(models.Model):
-#     url_hash = models.CharField("Url", blank=False, max_length=32, unique=True)
-#     expires = models.DateTimeField("Expires")
 
 
 class Image(TimeStampedModel):
@@ -21,6 +18,12 @@ class Image(TimeStampedModel):
 
     def __str__(self) -> str:
         return f"Image: {self.title}"
+
+
+class ImageAccessToken(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
+    image = models.ForeignKey(Image, on_delete=models.CASCADE, editable=False)
+    expires = models.DateTimeField()
 
 
 class ThumbnailSize(models.Model):
