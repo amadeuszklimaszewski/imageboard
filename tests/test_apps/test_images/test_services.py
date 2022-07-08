@@ -1,5 +1,6 @@
+import os, shutil
 from datetime import timedelta
-from django import test
+from django.test import override_settings, TestCase
 from django.contrib.auth import get_user_model
 from django.core.files.base import ContentFile
 from django.utils import timezone
@@ -18,7 +19,11 @@ from tests.test_apps.test_images.utils import generate_image_file
 User = get_user_model()
 
 
-class TestImageService(test.TestCase):
+TEST_MEDIA_ROOT = "var/www/site/tmp/"
+
+
+@override_settings(MEDIA_ROOT=TEST_MEDIA_ROOT)
+class TestImageService(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.service_class = ImageService
@@ -51,6 +56,15 @@ class TestImageService(test.TestCase):
         cls.image_file = generate_image_file()
         cls.image = ContentFile(cls.image_file.getvalue(), name=cls.image_file.name)
         cls.image_data = {"title": "test", "image": cls.image}
+
+    def tearDown(self) -> None:
+        for filename in os.listdir(TEST_MEDIA_ROOT):
+            filepath = os.path.join(TEST_MEDIA_ROOT, filename)
+            try:
+                shutil.rmtree(filepath)
+            except OSError:
+                os.remove(filepath)
+        return super().tearDown()
 
     def test_image_service_correctly_uploads_image(self):
         image_instance = self.service_class.upload_image(
@@ -97,7 +111,8 @@ class TestImageService(test.TestCase):
         self.assertEqual(len(result), 1)
 
 
-class TestTemporaryLinkService(test.TestCase):
+@override_settings(MEDIA_ROOT=TEST_MEDIA_ROOT)
+class TestTemporaryLinkService(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.service_class = TemporaryLinkService
@@ -123,6 +138,15 @@ class TestTemporaryLinkService(test.TestCase):
             title="test", uploaded_by=cls.user_account, image=cls.image
         )
         cls.link_data = {"seconds": 3000}
+
+    def tearDown(self) -> None:
+        for filename in os.listdir(TEST_MEDIA_ROOT):
+            filepath = os.path.join(TEST_MEDIA_ROOT, filename)
+            try:
+                shutil.rmtree(filepath)
+            except OSError:
+                os.remove(filepath)
+        return super().tearDown()
 
     def test_temporary_link_service_correctly_creates_access_token(self):
         token = self.service_class.create_access_token(
