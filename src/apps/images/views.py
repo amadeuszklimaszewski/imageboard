@@ -1,17 +1,23 @@
 from django.contrib.auth.models import User
+from django.http import Http404
 from rest_framework import viewsets, status, generics
 from rest_framework.mixins import CreateModelMixin
 from rest_framework.response import Response
 from rest_framework.exceptions import PermissionDenied
+
 from src.apps.accounts.models import UserAccount
+from src.apps.images.exceptions import InvalidImageAccessToken
 from src.apps.images.models import Image
 from src.apps.images.serializers import (
     BasicImageOutputSerializer,
     EnterpriseImageOutputSerializer,
     ImageInputSerializer,
     PremiumImageOutputSerializer,
+    TemporaryImageOutputSerializer,
+    TemporaryLinkInputSerializer,
+    TemporaryLinkOutputSerializer,
 )
-from src.apps.images.services import ImageService
+from src.apps.images.services import ImageService, TemporaryLinkService
 
 
 class ImageViewSet(CreateModelMixin, viewsets.ReadOnlyModelViewSet):
@@ -58,3 +64,46 @@ class ImageViewSet(CreateModelMixin, viewsets.ReadOnlyModelViewSet):
             )
         except PermissionDenied as exc:
             return Response(exc.detail, status=status.HTTP_400_BAD_REQUEST)
+
+
+class GenerateTemporaryLinkAPIView(generics.CreateAPIView):
+    serializer_class = TemporaryLinkOutputSerializer
+    service_class = TemporaryLinkService
+
+    def _validate_user_account(self, request_user: User) -> UserAccount:
+        account = request_user.user_account
+        if account is None or account.membership_type.name != "Enterprise":
+            raise Http404
+
+    def create(self, request, *args, **kwargs):
+        self._validate_user_account(request_user=request.user)
+
+        image_id = kwargs.get("pk")
+        serializer = TemporaryLinkInputSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        access_token = self.service_class.create_access_token(
+            image_id=image_id, data=serializer.validated_data
+        )
+        return Response(
+            self.get_serializer(access_token).data,
+            status=status.HTTP_201_CREATED,
+        )
+
+
+class TemporaryImageLinkAPIView(generics.RetrieveAPIView):
+    serializer_class = TemporaryImageOutputSerializer
+    service_class = TemporaryLinkService
+
+    def get(self, request, *args, **kwargs):
+        access_token_id = kwargs.get("pk")
+        try:
+            image = self.service_class.get_image_from_token(
+                access_token_id=access_token_id
+            )
+            return Response(
+                self.get_serializer(image).data,
+                status=status.HTTP_201_CREATED,
+            )
+        except InvalidImageAccessToken as exc:
+            return Response(str(exc), status=status.HTTP_400_BAD_REQUEST)

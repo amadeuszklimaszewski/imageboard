@@ -1,13 +1,17 @@
 import io
 import os
+from datetime import timedelta
 from typing import Any
+from uuid import UUID
 from django.db import transaction
 from django.core.files.base import ContentFile
 from PIL import Image
+from django.shortcuts import get_object_or_404
+from django.utils import timezone
 
-from src.apps.images.exceptions import UnsupportedFileExtension
+from src.apps.images.exceptions import InvalidImageAccessToken, UnsupportedFileExtension
 from src.apps.accounts.models import UserAccount
-from src.apps.images.models import Thumbnail, Image as ImageModel
+from src.apps.images.models import ImageAccessToken, Thumbnail, Image as ImageModel
 from src.apps.images.utils import (
     get_thumbnail_dimensions,
     get_format,
@@ -51,7 +55,7 @@ class ImageService:
     ) -> ImageModel:
         title = data["title"]
         image_file = data["image"]
-        print(image_file)
+
         image_model = ImageModel.objects.create(
             image=image_file, title=title, uploaded_by=user_account
         )
@@ -65,3 +69,32 @@ class ImageService:
             )
             cls.create_thumbnail(instance=image_model, thumbnail_size=size)
         return image_model
+
+
+class TemporaryLinkService:
+    @classmethod
+    @transaction.atomic
+    def create_access_token(
+        cls,
+        image_id: UUID,
+        data: dict[str, int],
+    ) -> ImageAccessToken:
+        image = get_object_or_404(ImageModel, id=image_id)
+
+        seconds = data["seconds"]
+        expires = timezone.now() + timedelta(seconds=seconds)
+        token = ImageAccessToken.objects.create(image=image, expires=expires)
+        return token
+
+    @classmethod
+    def _validate_access_token(cls, access_token: ImageAccessToken) -> ImageAccessToken:
+        if access_token.expires < timezone.now():
+            access_token.delete()
+            raise InvalidImageAccessToken("Invalid access token")
+        return
+
+    @classmethod
+    def get_image_from_token(cls, access_token_id: UUID) -> Image:
+        access_token = get_object_or_404(ImageAccessToken, id=access_token_id)
+        cls._validate_access_token(access_token)
+        return access_token.image
