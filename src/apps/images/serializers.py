@@ -73,7 +73,7 @@ class BasicImageOutputSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
 
-class PremiumImageOutputSerializer(serializers.ModelSerializer):
+class OriginalImageOutputSerializer(serializers.ModelSerializer):
     thumbnails = ThumbnailOutputSerializer(many=True, read_only=True)
 
     created_at = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", read_only=True)
@@ -92,7 +92,29 @@ class PremiumImageOutputSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
 
-class EnterpriseImageOutputSerializer(serializers.ModelSerializer):
+class ImageWithLinkOutputSerializer(serializers.ModelSerializer):
+    thumbnails = ThumbnailOutputSerializer(many=True, read_only=True)
+    temporary_link_generator = serializers.HyperlinkedIdentityField(
+        view_name="images:generate-image-link", lookup_field="pk", read_only=True
+    )
+
+    created_at = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", read_only=True)
+    updated_at = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", read_only=True)
+
+    class Meta:
+        model = Image
+        fields = (
+            "id",
+            "title",
+            "thumbnails",
+            "temporary_link_generator",
+            "created_at",
+            "updated_at",
+        )
+        read_only_fields = fields
+
+
+class OriginalImageWithLinkOutputSerializer(serializers.ModelSerializer):
     thumbnails = ThumbnailOutputSerializer(many=True, read_only=True)
     temporary_link_generator = serializers.HyperlinkedIdentityField(
         view_name="images:generate-image-link", lookup_field="pk", read_only=True

@@ -28,7 +28,7 @@ SECRET_KEY = env_config.get("SECRET_KEY")
 
 DEBUG = env_config.get("DEBUG", cast=bool)
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["localhost", "127.0.0.1", "0.0.0.0"]
 
 
 # Application definition
@@ -132,7 +132,9 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
 
 STATIC_URL = "static/"
-STATICFILES_DIRS = (os.path.join("static"),)
+STATICFILES_DIRS = [
+    os.path.join("static"),
+]
 
 MEDIA_URL = "media/"
 MEDIA_ROOT = "var/www/site/media/"

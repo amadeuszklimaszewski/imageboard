@@ -10,10 +10,11 @@ from src.apps.accounts.models import UserAccount
 from src.apps.images.exceptions import InvalidImageAccessToken
 from src.apps.images.models import Image
 from src.apps.images.serializers import (
-    BasicImageOutputSerializer,
-    EnterpriseImageOutputSerializer,
     ImageInputSerializer,
-    PremiumImageOutputSerializer,
+    BasicImageOutputSerializer,
+    OriginalImageOutputSerializer,
+    ImageWithLinkOutputSerializer,
+    OriginalImageWithLinkOutputSerializer,
     TemporaryImageOutputSerializer,
     TemporaryLinkInputSerializer,
     TemporaryLinkOutputSerializer,
@@ -23,11 +24,6 @@ from src.apps.images.services import ImageService, TemporaryLinkService
 
 class ImageViewSet(CreateModelMixin, viewsets.ReadOnlyModelViewSet):
     queryset = Image.objects.all()
-    serializer_classes = {
-        "Enterprise": EnterpriseImageOutputSerializer,
-        "Premium": PremiumImageOutputSerializer,
-        "Basic": BasicImageOutputSerializer,
-    }
     service_class = ImageService
 
     def get_queryset(self):
@@ -39,9 +35,18 @@ class ImageViewSet(CreateModelMixin, viewsets.ReadOnlyModelViewSet):
 
     def get_serializer_class(self):
         account = self.request.user.user_account
-        return self.serializer_classes.get(
-            account.membership_type.name, self.serializer_classes["Basic"]
-        )
+        membership = account.membership_type
+
+        if membership.contains_original_link and membership.generates_expiring_link:
+            return OriginalImageWithLinkOutputSerializer
+
+        if membership.contains_original_link:
+            return OriginalImageOutputSerializer
+
+        if membership.generates_expiring_link:
+            return ImageWithLinkOutputSerializer
+
+        return BasicImageOutputSerializer
 
     def _validate_user_account(self, request_user: User) -> UserAccount:
         account = request_user.user_account
