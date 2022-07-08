@@ -1,7 +1,5 @@
 from typing import Any
-from django.urls import reverse
 from rest_framework import serializers
-from django.core.validators import MaxValueValidator, MinValueValidator
 from src.apps.images.models import Image, ImageAccessToken, Thumbnail
 
 
@@ -24,7 +22,7 @@ class TemporaryLinkInputSerializer(serializers.Serializer):
 class TemporaryImageOutputSerializer(serializers.ModelSerializer):
     class Meta:
         model = Image
-        fields = "image"
+        fields = ("image",)
         read_only_fields = fields
 
 

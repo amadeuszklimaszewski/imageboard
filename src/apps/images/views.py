@@ -104,7 +104,7 @@ class TemporaryImageLinkAPIView(generics.RetrieveAPIView):
             )
             return Response(
                 self.get_serializer(image).data,
-                status=status.HTTP_201_CREATED,
+                status=status.HTTP_200_OK,
             )
         except InvalidImageAccessToken as exc:
             return Response(str(exc), status=status.HTTP_400_BAD_REQUEST)

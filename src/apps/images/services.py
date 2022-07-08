@@ -16,6 +16,7 @@ from src.apps.images.utils import (
     get_thumbnail_dimensions,
     get_format,
     get_thumbnail_filename,
+    get_new_image_name,
 )
 
 
@@ -55,6 +56,9 @@ class ImageService:
     ) -> ImageModel:
         title = data["title"]
         image_file = data["image"]
+
+        new_name = get_new_image_name(image_file.name)
+        image_file.name = new_name
 
         image_model = ImageModel.objects.create(
             image=image_file, title=title, uploaded_by=user_account

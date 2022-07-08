@@ -1,4 +1,5 @@
 from math import ceil
+from uuid import uuid4
 
 
 def get_format(extension: str) -> str:
@@ -22,3 +23,9 @@ def get_thumbnail_dimensions(
     thumbnail_width = image_width / scale
     return (ceil(thumbnail_width), thumbnail_height)
     # rounding down causes PIL to change height
+
+
+def get_new_image_name(name: str) -> str:
+    _, ext = name.split(".")
+    img_id = str(uuid4())
+    return ".".join([img_id, ext])
