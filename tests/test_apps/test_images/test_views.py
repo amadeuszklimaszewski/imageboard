@@ -1,8 +1,6 @@
 import os
 import shutil
 from datetime import timedelta
-from io import BytesIO
-from PIL import Image
 from django.test import override_settings
 from django.urls import reverse
 from django.contrib.auth import get_user_model

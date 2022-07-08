@@ -55,22 +55,6 @@ class ThumbnailOutputSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
 
-class ImageOutputSerializer(serializers.ModelSerializer):
-    created_at = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", read_only=True)
-    updated_at = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", read_only=True)
-
-    class Meta:
-        model = Image
-        fields = (
-            "id",
-            "title",
-            "image",
-            "created_at",
-            "updated_at",
-        )
-        read_only_fields = fields
-
-
 class BasicImageOutputSerializer(serializers.ModelSerializer):
     thumbnails = ThumbnailOutputSerializer(many=True, read_only=True)
 

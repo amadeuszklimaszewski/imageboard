@@ -73,7 +73,7 @@ class GenerateTemporaryLinkAPIView(generics.CreateAPIView):
 
     def _validate_user_account(self, request_user: User) -> UserAccount:
         account = request_user.user_account
-        if account is None or account.membership_type.name != "Enterprise":
+        if account is None or account.membership_type.generates_expiring_link is False:
             raise Http404
 
     def create(self, request, *args, **kwargs):
