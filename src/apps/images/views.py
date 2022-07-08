@@ -36,6 +36,8 @@ class ImageViewSet(CreateModelMixin, viewsets.ReadOnlyModelViewSet):
     def get_serializer_class(self):
         account = self.request.user.user_account
         membership = account.membership_type
+        if not membership:
+            return BasicImageOutputSerializer
 
         if membership.contains_original_link and membership.generates_expiring_link:
             return OriginalImageWithLinkOutputSerializer
