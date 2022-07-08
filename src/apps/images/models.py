@@ -1,6 +1,5 @@
 from uuid import uuid4
 from django.db import models
-
 from src.core.models import TimeStampedModel
 
 
@@ -13,7 +12,7 @@ class Image(TimeStampedModel):
     width = models.IntegerField(default=0)
 
     image = models.ImageField(
-        upload_to="static/images", height_field="height", width_field="width"
+        upload_to="images", height_field="height", width_field="width"
     )
 
     def __str__(self) -> str:
@@ -41,7 +40,7 @@ class Thumbnail(TimeStampedModel):
     height = models.IntegerField(default=0)
     width = models.IntegerField(default=0)
     thumbnail = models.ImageField(
-        upload_to="static/thumbnails", height_field="height", width_field="width"
+        upload_to="thumbnails", height_field="height", width_field="width"
     )
 
     def __str__(self) -> str:

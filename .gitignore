@@ -117,3 +117,6 @@ db.sqlite3
 .vscode/
 /staticfiles
 /static
+/media/images
+/media/thumbnails
+/media/tmp
