@@ -1,8 +1,7 @@
-from datetime import timedelta, datetime
 import os
-from io import BytesIO
 import shutil
-import time
+from datetime import timedelta
+from io import BytesIO
 from PIL import Image
 from django.test import override_settings
 from django.urls import reverse
@@ -17,22 +16,13 @@ from src.apps.images.models import (
     ImageAccessToken,
     Image as ImageModel,
     ThumbnailSize,
-    Thumbnail,
 )
 from src.apps.memberships.models import MembershipType
+from tests.test_apps.test_images.utils import generate_image_file
 
 User = get_user_model()
 
 TEST_MEDIA_ROOT = "var/www/site/tmp/"
-
-
-def generate_image_file() -> BytesIO:
-    file = BytesIO()
-    image = Image.new("RGBA", size=(1000, 1000), color=(155, 0, 0))
-    image.save(file, "png")
-    file.name = "test.png"
-    file.seek(0)
-    return file
 
 
 @override_settings(MEDIA_ROOT=TEST_MEDIA_ROOT)

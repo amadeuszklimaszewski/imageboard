@@ -22,7 +22,7 @@ from src.apps.images.utils import (
 
 class ImageService:
     @classmethod
-    def create_thumbnail(
+    def _create_thumbnail(
         self, instance: ImageModel, thumbnail_size: tuple[int]
     ) -> Thumbnail:
         image = instance.image
@@ -50,6 +50,16 @@ class ImageService:
         return thumbnail
 
     @classmethod
+    def create_thumbnails(cls, image_model: ImageModel, thumbnail_sizes):
+        for thumbnail_size in thumbnail_sizes:
+            size = get_thumbnail_dimensions(
+                image_height=image_model.height,
+                image_width=image_model.width,
+                thumbnail_height=thumbnail_size.height,
+            )
+            cls._create_thumbnail(instance=image_model, thumbnail_size=size)
+
+    @classmethod
     @transaction.atomic
     def upload_image(
         cls, data: dict[str, Any], user_account: UserAccount
@@ -64,14 +74,7 @@ class ImageService:
             image=image_file, title=title, uploaded_by=user_account
         )
         thumbnail_sizes = user_account.membership_type.thumbnail_sizes.all()
-
-        for thumbnail_size in thumbnail_sizes:
-            size = get_thumbnail_dimensions(
-                image_height=image_model.height,
-                image_width=image_model.width,
-                thumbnail_height=thumbnail_size.height,
-            )
-            cls.create_thumbnail(instance=image_model, thumbnail_size=size)
+        cls.create_thumbnails(image_model=image_model, thumbnail_sizes=thumbnail_sizes)
         return image_model
 
 
