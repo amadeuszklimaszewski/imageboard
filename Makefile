@@ -5,7 +5,11 @@ build-dev:
 
 up-dev:
 	docker-compose run --rm backend bash -c "python manage.py migrate"
+	docker-compose run --rm backend bash -c "python manage.py loaddata fixtures/fixtures.json"
 	docker-compose up
+
+fixtures:
+	docker-compose exec backend bash -c "python manage.py loaddata fixtures/fixtures.json"
 
 migrations:
 	docker-compose exec backend bash -c "python manage.py makemigrations && python manage.py migrate"
@@ -15,9 +19,6 @@ superuser:
 
 test:
 	docker-compose exec backend bash -c "python manage.py test $(location)"
-
-django-shell:
-	docker-compose exec backend bash -c "python manage.py shell_plus --ipython --print-sql"
 
 backend-bash:
 	docker-compose exec backend bash
