@@ -1,6 +1,7 @@
 db-name=postgres
 
 build-dev:
+	-cp -n ./config/.env.template ./config/.env
 	docker-compose build
 
 up-dev:
