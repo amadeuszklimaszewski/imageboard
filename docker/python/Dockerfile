@@ -26,6 +26,8 @@ COPY --from=requirements-stage /tmp/requirements.txt /app/requirements.txt
 
 RUN pip install --no-cache-dir --upgrade -r /app/requirements.txt
 
+COPY ./config/.env.template ./config/.env
+
 COPY . .
 
 
@@ -33,6 +35,4 @@ RUN adduser -u 5678 --disabled-password --gecos "" appuser && chown -R appuser /
 USER appuser
 
 
-ENTRYPOINT ["sh", "./scripts/wait_for_db.sh"]
-
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+ENTRYPOINT ["sh", "./scripts/start.sh"]
