@@ -1,14 +1,15 @@
 from django.contrib.auth.models import User
 from django.http import Http404
 
-from rest_framework import viewsets, status, generics
+from rest_framework import viewsets, status, generics, views
 from rest_framework.mixins import CreateModelMixin
 from rest_framework.response import Response
 from rest_framework.exceptions import PermissionDenied
+from drf_yasg.utils import swagger_auto_schema
 
 from src.apps.accounts.models import UserAccount
 from src.apps.images.exceptions import InvalidImageAccessToken
-from src.apps.images.models import Image
+from src.apps.images.models import Image, ImageAccessToken
 from src.apps.images.serializers import (
     ImageInputSerializer,
     BasicImageOutputSerializer,
@@ -22,7 +23,7 @@ from src.apps.images.serializers import (
 from src.apps.images.services import ImageService, TemporaryLinkService
 
 
-class ImageViewSet(CreateModelMixin, viewsets.ReadOnlyModelViewSet):
+class ImageViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Image.objects.all()
     service_class = ImageService
 
@@ -58,6 +59,7 @@ class ImageViewSet(CreateModelMixin, viewsets.ReadOnlyModelViewSet):
             )
         return account
 
+    @swagger_auto_schema(request_body=ImageInputSerializer)
     def create(self, request, *args, **kwargs):
         serializer = ImageInputSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -74,7 +76,8 @@ class ImageViewSet(CreateModelMixin, viewsets.ReadOnlyModelViewSet):
             return Response(exc.detail, status=status.HTTP_400_BAD_REQUEST)
 
 
-class GenerateTemporaryLinkAPIView(generics.CreateAPIView):
+class GenerateTemporaryLinkAPIView(generics.GenericAPIView):
+    queryset = ImageAccessToken.objects.all()
     serializer_class = TemporaryLinkOutputSerializer
     service_class = TemporaryLinkService
 
@@ -83,7 +86,8 @@ class GenerateTemporaryLinkAPIView(generics.CreateAPIView):
         if account is None or account.membership_type.generates_expiring_link is False:
             raise Http404
 
-    def create(self, request, *args, **kwargs):
+    @swagger_auto_schema(request_body=TemporaryLinkInputSerializer)
+    def post(self, request, *args, **kwargs):
         self._validate_user_account(request_user=request.user)
 
         image_id = kwargs.get("pk")
@@ -100,6 +104,7 @@ class GenerateTemporaryLinkAPIView(generics.CreateAPIView):
 
 
 class TemporaryImageLinkAPIView(generics.RetrieveAPIView):
+    queryset = ImageAccessToken.objects.all()
     serializer_class = TemporaryImageOutputSerializer
     service_class = TemporaryLinkService
 

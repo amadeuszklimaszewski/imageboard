@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     "rest_framework.authtoken",
     "dj_rest_auth",
     "rest_framework_simplejwt",
+    "drf_yasg",
     # local
     "src.apps.images",
     "src.apps.memberships",
