@@ -14,6 +14,7 @@
 * Django REST Framework
 * Docker
 * PostgreSQL
+* Nginx
 
 ## Setup
 1. Clone repository:
