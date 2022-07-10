@@ -1,15 +1,14 @@
 from django.contrib.auth.models import User
 from django.http import Http404
 
-from rest_framework import viewsets, status, generics, views
-from rest_framework.mixins import CreateModelMixin
+from rest_framework import viewsets, status, generics
 from rest_framework.response import Response
-from rest_framework.exceptions import PermissionDenied
 from drf_yasg.utils import swagger_auto_schema
 
 from src.apps.accounts.models import UserAccount
 from src.apps.images.exceptions import InvalidImageAccessToken
 from src.apps.images.models import Image, ImageAccessToken
+from src.apps.images.permissions import UserHasAccountPermission
 from src.apps.images.serializers import (
     ImageInputSerializer,
     BasicImageOutputSerializer,
@@ -26,6 +25,7 @@ from src.apps.images.services import ImageService, TemporaryLinkService
 class ImageViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Image.objects.all()
     service_class = ImageService
+    permission_classes = [UserHasAccountPermission]
 
     def get_queryset(self):
         qs = self.queryset
@@ -51,29 +51,18 @@ class ImageViewSet(viewsets.ReadOnlyModelViewSet):
 
         return BasicImageOutputSerializer
 
-    def _validate_user_account(self, request_user: User) -> UserAccount:
-        account = request_user.user_account
-        if account is None:
-            raise PermissionDenied(
-                "Invalid request user. User account does not exist in the database."
-            )
-        return account
-
     @swagger_auto_schema(request_body=ImageInputSerializer)
     def create(self, request, *args, **kwargs):
         serializer = ImageInputSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        try:
-            user_account = self._validate_user_account(request.user)
-            image = self.service_class.upload_image(
-                data=serializer.validated_data, user_account=user_account
-            )
-            return Response(
-                self.get_serializer(image).data,
-                status=status.HTTP_201_CREATED,
-            )
-        except PermissionDenied as exc:
-            return Response(exc.detail, status=status.HTTP_400_BAD_REQUEST)
+        user_account = request.user.user_account
+        image = self.service_class.upload_image(
+            data=serializer.validated_data, user_account=user_account
+        )
+        return Response(
+            self.get_serializer(image).data,
+            status=status.HTTP_201_CREATED,
+        )
 
 
 class GenerateTemporaryLinkAPIView(generics.GenericAPIView):
