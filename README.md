@@ -20,8 +20,8 @@
 1. Clone repository:
 `$ git clone https://github.com/amadeuszklimaszewski/imageboard/`
 2. Run in root directory:
-`$ make build-dev`
-4. Run project: `make up-dev`
+`$ make build`
+4. Run project: `make up`
 
 
 ## Fixtures
