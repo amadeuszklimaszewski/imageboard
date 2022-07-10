@@ -53,6 +53,7 @@ class TestImageViewSet(APITestCase):
         cls.user_account = UserAccount.objects.create(
             user=cls.user, membership_type=cls.enterprise_membership
         )
+        cls.user_no_account = User.objects.create(username="invaliduser")
 
         file = generate_image_file()
         image_file = ContentFile(file.getvalue(), name=file.name)
@@ -84,15 +85,32 @@ class TestImageViewSet(APITestCase):
         response_data = response.data
         self.assertEqual(response_data["title"], self.post_image_data["title"])
 
+    def test_user_without_account_cannot_post_image(self):
+        self.client.force_login(user=self.user_no_account)
+        response = self.client.post(
+            self.image_list_url, self.post_image_data, format="multipart"
+        )
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
     def test_user_can_get_image_list(self):
         response = self.client.get(self.image_list_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         response_data = response.data["results"]
         self.assertEqual(len(response_data), 1)
 
+    def test_user_without_account_cannot_get_image_list(self):
+        self.client.force_login(user=self.user_no_account)
+        response = self.client.get(self.image_list_url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
     def test_user_can_get_image_by_id(self):
         response = self.client.get(self.image_detail_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_user_without_account_cannot_get_image_by_id(self):
+        self.client.force_login(user=self.user_no_account)
+        response = self.client.get(self.image_detail_url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_anonymoususer_cannot_get_image_list(self):
         self.client.logout()
@@ -162,6 +180,7 @@ class TestTemporaryImageLinkViews(APITestCase):
         cls.user_account = UserAccount.objects.create(
             user=cls.user, membership_type=cls.enterprise_membership
         )
+        cls.user_no_account = User.objects.create(username="invaliduser")
 
         file = generate_image_file()
         image_file = ContentFile(file.getvalue(), name=file.name)
@@ -200,25 +219,40 @@ class TestTemporaryImageLinkViews(APITestCase):
                 os.remove(filepath)
         return super().tearDown()
 
-    def test_enterprise_member_can_get_temporary_image_link_generator(self):
+    def test_enterprise_member_can_post_temporary_image_link_generator(self):
         response = self.client.post(self.image_generate_link_url, self.post_data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-    def test_basic_member_cannot_get_temporary_image_link_generator(self):
+    def test_user_without_account_cannot_post_temporary_image_link_generator(self):
+        self.client.force_login(user=self.user_no_account)
+        response = self.client.post(self.image_generate_link_url, self.post_data)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_basic_member_cannot_post_temporary_image_link_generator(self):
         self.user_account.membership_type = self.basic_membership
         self.user_account.save()
 
         response = self.client.post(self.image_generate_link_url, self.post_data)
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-    def test_premium_member_cannot_get_temporary_image_link_generator(self):
+    def test_premium_member_cannot_post_temporary_image_link_generator(self):
         self.user_account.membership_type = self.premium_membership
         self.user_account.save()
 
         response = self.client.post(self.image_generate_link_url, self.post_data)
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_user_can_get_image_by_temporary_link(self):
+        response = self.client.get(self.temporary_link_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_user_with_no_account_can_get_image_by_temporary_link(self):
+        self.client.force_login(self.user_no_account)
+        response = self.client.get(self.temporary_link_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_anonymous_user_can_get_image_by_temporary_link(self):
+        self.client.logout()
         response = self.client.get(self.temporary_link_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 

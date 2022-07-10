@@ -1,14 +1,17 @@
 from django.contrib.auth.models import User
 from django.http import Http404
 
-from rest_framework import viewsets, status, generics
+from rest_framework import viewsets, status, generics, permissions
 from rest_framework.response import Response
 from drf_yasg.utils import swagger_auto_schema
 
 from src.apps.accounts.models import UserAccount
 from src.apps.images.exceptions import InvalidImageAccessToken
 from src.apps.images.models import Image, ImageAccessToken
-from src.apps.images.permissions import UserHasAccountPermission
+from src.apps.images.permissions import (
+    UserCanGenerateTemporaryLinkPermission,
+    UserHasAccountPermission,
+)
 from src.apps.images.serializers import (
     ImageInputSerializer,
     BasicImageOutputSerializer,
@@ -68,16 +71,11 @@ class ImageViewSet(viewsets.ReadOnlyModelViewSet):
 class GenerateTemporaryLinkAPIView(generics.GenericAPIView):
     queryset = ImageAccessToken.objects.all()
     serializer_class = TemporaryLinkOutputSerializer
+    permission_classes = [UserCanGenerateTemporaryLinkPermission]
     service_class = TemporaryLinkService
-
-    def _validate_user_account(self, request_user: User) -> UserAccount:
-        account = request_user.user_account
-        if account is None or account.membership_type.generates_expiring_link is False:
-            raise Http404
 
     @swagger_auto_schema(request_body=TemporaryLinkInputSerializer)
     def post(self, request, *args, **kwargs):
-        self._validate_user_account(request_user=request.user)
 
         image_id = kwargs.get("pk")
         serializer = TemporaryLinkInputSerializer(data=request.data)
@@ -96,6 +94,7 @@ class TemporaryImageLinkAPIView(generics.RetrieveAPIView):
     queryset = ImageAccessToken.objects.all()
     serializer_class = TemporaryImageOutputSerializer
     service_class = TemporaryLinkService
+    permission_classes = [permissions.AllowAny]
 
     def get(self, request, *args, **kwargs):
         access_token_id = kwargs.get("pk")
