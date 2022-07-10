@@ -9,8 +9,14 @@ services:
     restart: always
     env_file: ./config/.env
     command: gunicorn src.wsgi:application --bind 0.0.0.0:8000
+    volumes:
+      - static:/app/static
+      - media:/app/media
     ports:
-      - 8000:8000
+      - "8000:8000"
+    networks:
+      - nginx_network
+      - db_network
     depends_on:
       - db
 
@@ -21,6 +27,28 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     restart: always
+    networks:
+      - db_network
+  nginx:
+    image: nginx:latest
+    volumes:
+      - ./config/nginx/conf.d:/etc/nginx/conf.d
+      - static:/app/static
+      - media:/app/media
+    ports:
+      - "80:80"
+    networks:
+      - nginx_network
+    depends_on:
+      - backend
+
+networks:
+  nginx_network:
+    driver: bridge
+  db_network:
+    driver: bridge
 
 volumes:
   postgres_data:
+  static:
+  media:

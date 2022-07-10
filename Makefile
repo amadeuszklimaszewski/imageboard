@@ -1,10 +1,10 @@
 db-name=postgres
 
-build-dev:
+build:
 	-cp -n ./config/.env.template ./config/.env
 	docker-compose build
 
-up-dev:
+up:
 	docker-compose run --rm backend bash -c "python manage.py migrate"
 	docker-compose run --rm backend bash -c "python manage.py loaddata fixtures/fixtures.json"
 	docker-compose up
